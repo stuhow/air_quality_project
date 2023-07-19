@@ -2,6 +2,7 @@ import requests
 import glob
 import os
 import pandas as pd
+from datetime import datetime, timedelta, date
 
 def get_most_recent_date():
 
@@ -26,10 +27,20 @@ def get_most_recent_date():
 
     return most_recent_date
 
-def create_dates_list():
-    pass
+def create_dates_list(most_recent_date):
+    end_date = datetime.now().date()
+
+    # Create a list of dates between start_date and most_recent_date (excluding most_recent_date)
+    date_list = []
+    current_date = most_recent_date + timedelta(days=1)  # Skip the start date
+    while current_date < end_date:
+        date_list.append(current_date.strftime("%Y-%m-%d"))
+        current_date += timedelta(days=1)
+
+    print(date_list[:10])
 
 def get_new_data():
     pass
 
-get_most_recent_date()
+most_recent_date = get_most_recent_date()
+create_dates_list(most_recent_date)
