@@ -3,6 +3,7 @@ import glob
 import os
 import pandas as pd
 from datetime import datetime, timedelta, date
+import time
 
 def get_most_recent_date():
 
@@ -37,10 +38,64 @@ def create_dates_list(most_recent_date):
         date_list.append(current_date.strftime("%Y-%m-%d"))
         current_date += timedelta(days=1)
 
-    print(date_list[:10])
+    print('Date list complete')
 
-def get_new_data():
-    pass
+    return date_list
+
+def get_new_data(date_list):
+    print(f"Retrieving data for {len(date_list)} dates")
+    if len(date_list) == 0:
+        print('No new dates')
+    else:
+
+        for index, single_date in enumerate(date_list):
+            url = f"https://api.ust.is/aq/a/getDate/date/{single_date}"
+            stations = requests.get(url).json()
+
+            rows =[]
+            for station_local_id, elements in stations.items():
+                for pollutantnotation, times in elements['parameters'].items():
+                    for key, data in times.items():
+                        if not isinstance(data, str):
+
+                            validity = 1
+                            if data['value'] == None:
+                                validity = None
+
+                            row = {
+                                "station_name": elements['name'],
+                                "pollutantnotation": pollutantnotation,
+                                "endtime": data['endtime'],
+                                "the_value": data['value'],
+                                "resolution": times['resolution'],
+                                "verification": data['verification'],
+
+                                "validity": validity,
+                                "station_local_id": elements['local_id'],
+                                "concentration": times['unit'],
+
+                            }
+                            rows.append(row)
+
+            df = pd.DataFrame(rows)
+
+            year = df['endtime'][0][:4]
+            file_name = f"ust_aq_timeseries_{year}.csv"
+            folder_path = "raw_data/"
+
+            file_path = os.path.join(folder_path, file_name)
+
+            if os.path.isfile(file_path):
+                df.to_csv(file_path, mode='a', index=False, header=False)
+            else:
+                df.to_csv(file_path, mode='w' ,index=False)
+
+            time.sleep(1)
+
+            if index % 50 == 0:
+                print(f"{index} out of {len(date_list)} complete!")
+
 
 most_recent_date = get_most_recent_date()
-create_dates_list(most_recent_date)
+date_list = create_dates_list(most_recent_date)
+get_new_data(date_list)
