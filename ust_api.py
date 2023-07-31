@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, date
 import time
 
 def get_most_recent_date():
+    # a function to find the most recent date in the files
 
     folder_path = "raw_data/"
 
@@ -29,6 +30,8 @@ def get_most_recent_date():
     return most_recent_date
 
 def create_dates_list(most_recent_date):
+    # a function that will return a list of dates between the lastest date in our spreadsheets and yesterdays date
+
     end_date = datetime.now().date()
 
     # Create a list of dates between start_date and most_recent_date (excluding most_recent_date)
@@ -43,6 +46,9 @@ def create_dates_list(most_recent_date):
     return date_list
 
 def get_new_data(date_list):
+    # a funcion that will extract the data from the ust api and add it to the year
+    # or create a new year file if we change years
+
     print(f"Retrieving data for {len(date_list)} dates")
     if len(date_list) == 0:
         print('No new dates')
